@@ -14,8 +14,8 @@ import me.chanchangxing.selector.ui.SelectorFragment;
 
 public class CitySelector {
 
-    private SelectorFragment fragment;
-    private FragmentManager fm;
+    private SelectorFragment mFragment;
+    private FragmentManager mFm;
     private int mRes;
     private String[] mArgs;
     private OnMoveListener mOnMoveListener;
@@ -41,28 +41,27 @@ public class CitySelector {
         return this;
     }
 
-    public void build() {
-        if ((fragment = (SelectorFragment) fm.findFragmentByTag("city_selector")) == null) {
-            fragment = new SelectorFragment();
-            fm.beginTransaction().add(mRes, fragment, "city_selector").commit();
+    public void show() {
+        if ((mFragment = (SelectorFragment) mFm.findFragmentByTag("city_selector")) == null) {
+            mFragment = new SelectorFragment();
+            mFm.beginTransaction().add(mRes, mFragment, "city_selector").commit();
         }
 
-        fm.beginTransaction().show(fragment).commit();
+        mFm.beginTransaction().show(mFragment).commit();
 
-        fragment.setOnClickBgListener(new OnClickBgListener() {
+        mFragment.setOnClickBgListener(new OnClickBgListener() {
             @Override
             public void onClickBg() {
-                fm.beginTransaction().hide(fragment).commit();
+                mFm.beginTransaction().hide(mFragment).commit();
             }
         });
 
-        fragment.setCurrentItem(mArgs);
-        fragment.setOnMoveListener(mOnMoveListener);
+        mFragment.setCurrentItem(mArgs);
+        mFragment.setOnMoveListener(mOnMoveListener);
     }
 
     private CitySelector(Activity activity, @IdRes int res) {
         this.mRes = res;
-
-        fm = activity.getFragmentManager();
+        mFm = activity.getFragmentManager();
     }
 }

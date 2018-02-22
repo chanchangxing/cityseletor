@@ -1,14 +1,12 @@
 // Top-level build file where you can add configuration options common to all sub-projects/modules.
-
 buildscript {
-    
     repositories {
         google()
         jcenter()
     }
     dependencies {
         classpath 'com.android.tools.build:gradle:3.0.1'
-        
+        classpath 'com.jfrog.bintray.gradle:gradle-bintray-plugin:1.7.3'
 
         // NOTE: Do not place your application dependencies here; they belong
         // in the individual module build.gradle files
@@ -19,6 +17,24 @@ allprojects {
     repositories {
         google()
         jcenter()
+    }
+
+    apply plugin: 'maven-publish'
+    apply plugin: 'com.jfrog.bintray'
+}
+
+bintray {
+    user = 'chanchangxing'
+    key = '8c3031612419873a2124db252529c9b73bdcc55d'
+    configurations = ['archives']
+    pkg {
+        repo = 'chanchangxing'
+        name = 'cityselector'
+        licenses = ['Apache-2.0']
+        vcsUrl = 'https://github.com/chanchangxing/cityseletor'
+        version {
+            name = '0.1'
+        }
     }
 }
 

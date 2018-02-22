@@ -47,7 +47,9 @@ public class SelectorFragment extends Fragment {
 
     @Nullable
     @Override
-    public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+    public View onCreateView(LayoutInflater inflater,
+                             @Nullable ViewGroup container,
+                             @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_selector, container, false);
 
         mProvince = view.findViewById(R.id.province);
@@ -84,6 +86,10 @@ public class SelectorFragment extends Fragment {
     }
 
     public void setCurrentItem(String... ids) {
+        if (ids == null) {
+            return;
+        }
+
         if (ids.length == 1) {
             mProvinceId = ids[0];
         }
@@ -114,13 +120,16 @@ public class SelectorFragment extends Fragment {
             public void onChanged(WheelView wheel, int oldValue, int newValue) {
                 mCurrentProvinceBean = mProvinceBeanList.get(newValue);
                 String provinceId = mCurrentProvinceBean.getId();
-                setCityAdapter(provinceId, 0);
+                setCityAdapter(provinceId);
 
                 mCurrentCityBean = mDB.getFirstCity(provinceId);
                 String cityId = mCurrentCityBean.getId();
-                setDistrictAdapter(cityId, 0);
+                setDistrictAdapter(cityId);
 
-                mCurrentDistrictBean = mDistrictBeanList == null || mDistrictBeanList.isEmpty() ? null : mDistrictBeanList.get(0);
+                mCurrentDistrictBean =
+                        mDistrictBeanList == null || mDistrictBeanList.isEmpty()
+                                ? null
+                                : mDistrictBeanList.get(0);
 
                 addMoveListener();
 
@@ -134,7 +143,10 @@ public class SelectorFragment extends Fragment {
                 String cityId = mCurrentCityBean.getId();
                 setDistrictAdapter(cityId);
 
-                mCurrentDistrictBean = mDistrictBeanList == null || mDistrictBeanList.isEmpty() ? null : mDistrictBeanList.get(0);
+                mCurrentDistrictBean =
+                        mDistrictBeanList == null || mDistrictBeanList.isEmpty()
+                                ? null
+                                : mDistrictBeanList.get(0);
 
                 addMoveListener();
             }
@@ -143,7 +155,10 @@ public class SelectorFragment extends Fragment {
         mDistrict.addChangingListener(new OnWheelChangedListener() {
             @Override
             public void onChanged(WheelView wheel, int oldValue, int newValue) {
-                mCurrentDistrictBean = mDistrictBeanList == null || mDistrictBeanList.isEmpty() ? null : mDistrictBeanList.get(newValue);
+                mCurrentDistrictBean =
+                        mDistrictBeanList == null || mDistrictBeanList.isEmpty()
+                                ? null
+                                : mDistrictBeanList.get(newValue);
 
                 addMoveListener();
             }
@@ -152,28 +167,34 @@ public class SelectorFragment extends Fragment {
 
     private void addMoveListener() {
         if (onMoveListener != null) {
-            onMoveListener.onMove(mCurrentProvinceBean, mCurrentCityBean, mCurrentDistrictBean);
+            onMoveListener.onMove(
+                    mCurrentProvinceBean,
+                    mCurrentCityBean,
+                    mCurrentDistrictBean);
         }
     }
 
-    private void setCityAdapter(String provinceId, String cityId) {
-        setCityAdapter(provinceId);
-        mCity.setCurrentItem(findCurrentItem(mCityBeanList, cityId));
+    private void setCityAdapter(String provinceId) {
+        setCityAdapter(provinceId, null);
     }
 
-    private void setCityAdapter(String provinceId, int currentItem) {
-        setCityAdapter(provinceId);
-        mCity.setCurrentItem(currentItem);
+    private void setCityAdapter(String provinceId, String cityId) {
+        mCityBeanList = mDB.getCityBean(provinceId);
+        ArrayWheelAdapter<String> adapter = new ArrayWheelAdapter<>(getActivity(), mDB.getCityFullName(provinceId));
+        mCity.setViewAdapter(adapter);
+
+        mCity.setCurrentItem(cityId == null ? 0 : findCurrentItem(mCityBeanList, cityId));
+    }
+
+    private void setDistrictAdapter(String cityId) {
+        setDistrictAdapter(cityId, null);
     }
 
     private void setDistrictAdapter(String cityId, String districtId) {
-        setDistrictAdapter(cityId);
+        ArrayWheelAdapter<String> adapter = new ArrayWheelAdapter<>(getActivity(), mDB.getDistrictFullName(cityId));
+        mDistrict.setViewAdapter(adapter);
+        mDistrictBeanList = mDB.getDistrictBean(cityId);
         mDistrict.setCurrentItem(findCurrentItem(mDistrictBeanList, districtId), true);
-    }
-
-    private void setDistrictAdapter(String cityId, int currentItem) {
-        setDistrictAdapter(cityId);
-        mDistrict.setCurrentItem(currentItem);
     }
 
     private void setProvinceAdapter(String provinceId) {
@@ -184,24 +205,15 @@ public class SelectorFragment extends Fragment {
         mProvince.setCurrentItem(findCurrentItem(mProvinceBeanList, provinceId));
     }
 
-    private void setCityAdapter(String provinceId) {
-        mCityBeanList = mDB.getCityBean(provinceId);
-
-        ArrayWheelAdapter<String> adapter = new ArrayWheelAdapter<>(getActivity(), mDB.getCityFullName(provinceId));
-        mCity.setViewAdapter(adapter);
-    }
-
-    private void setDistrictAdapter(String cityId) {
-        ArrayWheelAdapter<String> adapter = new ArrayWheelAdapter<>(getActivity(), mDB.getDistrictFullName(cityId));
-        mDistrict.setViewAdapter(adapter);
-
-        mDistrictBeanList = mDB.getDistrictBean(cityId);
-    }
-
     private int findCurrentItem(List<Bean> list, String id) {
-        int index = list.size() - 1;
-        for (; !id.equals(list.get(index).getId()); index--) {
-            if (index == 0) break;
+        int index = 0;
+        if (id != null) {
+            index = list.size() - 1;
+            for (; !id.equals(list.get(index).getId()); index--) {
+                if (index == 0) {
+                    break;
+                }
+            }
         }
 
         return index;
